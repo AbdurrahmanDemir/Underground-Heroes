@@ -1,0 +1,34 @@
+{
+	"poki_template_version": 1,
+	"extra_html": {
+	  "head": [
+		"<!-- will be copied to the resulting head //-->"
+	  ],
+	  "body": [
+		"<!-- will be copied to the resulting body //-->",
+		"<!-- will also be copied to the resulting body //-->"
+	  ]
+	},
+	"background_color": "#231F20",
+	"background_filename": "",
+	"code_filename": "cdc14794a36570cd75a79fd819078cff.wasm",
+	"company_name": "demir",
+	"data_filename": "da5f1b881942105ea90dd0a1c85636c3.data",
+	"decompression_fallback": "",
+	"development_player": "false",
+	"framework_filename": "d800539421424be97f13e0f44f7a5106.framework.js",
+	"height": "600",
+	"loader_filename": "bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js",
+	"memory_filename": "",
+	"product_name": "Underground Heroes",
+	"product_version": "1.9.2",
+	"splash_screen_style": "Dark",
+	"symbols_filename": "",
+	"unity_version": "2022.3.40f1",
+	"use_data_caching": "true",
+	"use_threads": "false",
+	"use_wasm": "true",
+	"use_webgl_1_0": "false",
+	"use_webgl_2_0": "true",
+	"width": "960"
+  }
