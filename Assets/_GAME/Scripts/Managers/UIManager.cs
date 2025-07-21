@@ -148,7 +148,6 @@ public class UIManager : MonoBehaviour
         {
             if (DataManager.instance.TryPurchaseEnergy(1))
             {
-                Bridge.advertisement.ShowInterstitial();
                 Bridge.platform.SendMessage(Playgama.Modules.Platform.PlatformMessage.GameplayStarted);
 
                 mainTheme.Stop();

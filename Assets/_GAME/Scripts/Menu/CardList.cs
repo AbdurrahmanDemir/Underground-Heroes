@@ -1,4 +1,6 @@
 using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -6,36 +8,63 @@ using System;
 public class CardList : MonoBehaviour
 {
     [Header("Hero Panel")]
-    [SerializeField] MenuHeroCardSO[] heroes;
-    [SerializeField] GameObject heroCardPrefab;
-    [SerializeField] Transform heroTransform;
-    [SerializeField] GameObject heroCardDetailsPrefabs;
-    [SerializeField] Transform heroDetailsTransform;
+    [SerializeField] private MenuHeroCardSO[] heroes;
+    [SerializeField] private GameObject heroCardPrefab;
+    [SerializeField] private Transform heroTransform;
+    [SerializeField] private GameObject heroCardDetailsPrefabs;
+    [SerializeField] private Transform heroDetailsTransform;
 
     public static Action onCardUpgrade;
 
     private void Start()
     {
+        StartCoroutine(LoadAllHeroesThenSetupUI());
+    }
+
+    private IEnumerator LoadAllHeroesThenSetupUI()
+    {
+        int loadedCount = 0;
+
+        for (int i = 0; i < heroes.Length; i++)
+        {
+            int index = i;
+            heroes[i].LoadData(() =>
+            {
+                loadedCount++;
+            });
+        }
+
+        // Tüm kartlar yüklenene kadar bekle
+        while (loadedCount < heroes.Length)
+        {
+            yield return null;
+        }
+
+        Debug.Log("Tüm kahraman verileri yüklendi!");
         HeroPanelUpdate();
     }
 
     public void HeroPanelUpdate()
     {
+        // Önce varsa eski kartlarý temizle
+        foreach (Transform child in heroTransform)
+        {
+            Destroy(child.gameObject);
+        }
+
         for (int i = 0; i < heroes.Length; i++)
         {
-            GameObject cardPrefabs = Instantiate(heroCardPrefab, heroTransform);
-
-            MenuHeroListCard heroScript = cardPrefabs.GetComponent<MenuHeroListCard>();
+            GameObject cardObj = Instantiate(heroCardPrefab, heroTransform);
+            MenuHeroListCard heroScript = cardObj.GetComponent<MenuHeroListCard>();
 
             heroScript.Config(
-                heroes[i].name,
+                heroes[i].cardName,
                 heroes[i].heroIcon,
                 heroes[i].cardType.ToString());
 
             heroScript.cardIndex = i;
 
             Button cardButton = heroScript.detailsButton;
-
             int capturedIndex = i;
             cardButton.onClick.AddListener(() => CardDetailsPanel(capturedIndex));
         }
@@ -43,6 +72,7 @@ public class CardList : MonoBehaviour
 
     public void CardDetailsPanel(int index)
     {
+        // Önce eski detay panel temizle
         foreach (Transform child in heroDetailsTransform)
         {
             Destroy(child.gameObject);
@@ -50,38 +80,39 @@ public class CardList : MonoBehaviour
 
         GameObject cardDetails = Instantiate(heroCardDetailsPrefabs, heroDetailsTransform);
         MenuHeroDetails cardScript = cardDetails.GetComponent<MenuHeroDetails>();
+
         DOTween.Kill(cardDetails.transform);
         cardDetails.transform.localScale = Vector3.zero;
-        if (cardDetails != null)
-        {
-            cardDetails.transform.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutBack);
-        }
+        cardDetails.transform.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutBack);
+
+        var hero = heroes[index];
 
         cardScript.Config(
-            heroes[index].name,
-            heroes[index].heroIcon,
-            heroes[index].cardType.ToString(),
-            heroes[index].cardDescription,
-            heroes[index].GetCurrentDamage(),
-            heroes[index].GetCurrentHealth(),
-            heroes[index].range,
-            heroes[index].cooldown,
-            heroes[index].moveSpeed,
-            heroes[index].GetUpgradeCost(),
-            heroes[index].specialStatName,
-            heroes[index].specialStat
+            hero.cardName,
+            hero.heroIcon,
+            hero.cardType.ToString(),
+            hero.cardDescription,
+            hero.GetCurrentDamage(),
+            hero.GetCurrentHealth(),
+            hero.range,
+            hero.cooldown,
+            hero.moveSpeed,
+            hero.GetUpgradeCost(),
+            hero.specialStatName,
+            hero.specialStat
         );
 
         Button upgradeButton = cardScript.GetUpgradeButton();
-
-        int capturedIndex = index;
+        upgradeButton.onClick.RemoveAllListeners(); // Önemli: Önce listener temizle
         upgradeButton.onClick.AddListener(() =>
         {
-            heroes[capturedIndex].UpgradeHero();
-            CardDetailsPanel(capturedIndex);
+            hero.UpgradeHero();
+
+            // UI güncelle (detay ve liste)
+            CardDetailsPanel(index);
+            HeroPanelUpdate();
+
             onCardUpgrade?.Invoke();
         });
     }
-
-
 }
